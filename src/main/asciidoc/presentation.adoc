@@ -108,13 +108,11 @@ digraph Q {
 
 == When should we use it
 
-. Differences
 |===
 ||Sequential|Asynchronous
 | IO bound program | waste time for waiting | can utilize 100% of CPU
 | CPU bound program | can utilize 100% of CPU | can utilize 100% of CPU
 |===
-
 
 == Async vs threads: Memory
 Each thread consumes memory for the stack, number of threads physically limited by machine memory.
@@ -265,7 +263,6 @@ async def main():
 asyncio.run(main())
 ----
 
-.Step by step
 |===
 | asyncio.run( | event loop started
 | asyncio.run(main()) | coroutine added to event loop queue,
