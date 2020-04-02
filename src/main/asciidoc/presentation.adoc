@@ -29,7 +29,7 @@ Cjvfkjnby@gmail.com
 
 
 == Concurrent computing
-image::threads.jpg[Photo by Wendy van Zyl, 700, role="right"]
+image::threads.jpg[Photo by Wendy van Zyl, role="right"]
 
 Concurrent computing is a form of computing in which several computations executed concurrently
 during overlapping time periods instead of sequentially, with one completing before the next starts.
@@ -44,7 +44,7 @@ All this thing is about a concurrency:
 In high level they are the same, but on low level they are different.
 
 == Asynchronous in real life
-image::toaster.jpg[Photo by Claudio Schwarz, 700, role="right"]
+image::toaster.jpg[Photo by Claudio Schwarz, role="right"]
 If you load the toaster and go to fridge to get some jam, this is asynchronous operations.
 If you load the toaster, wait until it is finished and go to the fridge, it is synchronous.
 
@@ -52,12 +52,12 @@ It is applicable in case on IO bound tasks (wait until bread roasted),
 but not applicable for IO bound tasks like reading a book.
 
 == Preemptive multitasking
-image::bsod.jpg[BSOD, 700, float="right"]
+image::bsod.jpg[BSOD, float="right"]
 Preemptive multitasking is when Operation system decide when it wants to switch between concurrent tasks.
 
 == Cooperative multitasking
-.Image by Alfred Leete
-image::you.png[Toaster]
+
+image::you.png[Image by Alfred Leete]
 Developer decides when it should suspend execution and when he wants to get result.
 
 == Resource utilization
