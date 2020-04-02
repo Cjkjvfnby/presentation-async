@@ -38,7 +38,7 @@ All this thing is about a concurrency:
 
 ** process
 ** thread
-** coroutine / fiber
+** coroutine/fiber
 ** green thread
 
 In high level they are the same, but on low level they are different.
@@ -115,7 +115,7 @@ digraph Q {
 |===
 
 == Async vs threads: Memory
-Each thread consumes memory for the stack, number of threads physically limited by machine memory.
+Each thread require memory for the stack, number of threads physically limited by machine memory.
 Systems like Django and Flask create a thread for each client.
 Async approach works in the different way, it adds each request to the queue.
 And can handle them in a single thread one by one. So it is much more scalable.
@@ -264,8 +264,7 @@ asyncio.run(main())
 ----
 
 |===
-| asyncio.run( | event loop started
-| asyncio.run(main()) | coroutine added to event loop queue,
+| asyncio.run(main()) | coroutine created and event loop stared with that coroutine in the queue,
 control returned to event loop, event loop starts the coroutine (main)
 |print(f"started at {time.strftime('%X')}")| prints text in the main function
 |say_after(1, 'hello')| coroutine added to event loop queue,
@@ -345,14 +344,14 @@ Speed comes in a price: you will need to have all tech to be async. So you will 
 Forget about `requests` you will need server compatible async client to make calls from server side. Usually it comes together with server.
 Not all databases have async client that is supported by SQLAlchemy. Async code is also harder to write and maintain.
 
-There are a lot of them. I would say that the list of features they provide looks more like a Flask than a Django.
+There are a lot of them. I would say that the list of features they provide looks similar to Flask.
 Most of them have integration with SQL Alchemy.
 
 
-=== https://www.tornadoweb.org/en/stable/[Tornado] it is a server and a client.
+=== https://www.tornadoweb.org/en/stable/[Tornado] is a server and a client.
 It was designed more than 10 years ago, before async/await pop up.
 Almost the same idea, but generators instead of `def async` and `yield` instead of `await`.
-Thy created own async web client to work with that event loop.
+They created own async web client to work with that event loop.
 Now Tornado supports async/await and generator workflow deprecated.
 
 
@@ -448,7 +447,7 @@ Not all Django code can be run in that way.
 == Conclusion
 
 - async approach allows developers to control waiting overlaps
-- async approach is better utilize resources when task is IO bound, it will work more effective under heavy load.
+- async approach effectively utilizes resources when task is IO bound, it will work more effective under heavy load.
 - async code is harder to write and support, much harder to debug
 - not all IO libraries have async analogues, using both async and sync code together may degrade system performance to sync level.
 - you can use async model outside of your application by using external tools like celery
