@@ -64,14 +64,17 @@ Developer decides when it should suspend execution and when he wants to get resu
 On a single processor you cannot overlap command execution, but you can overlap waiting time, that is asynchronous is about.
 
 Left is sequential approach and right is asynchronous approach.
-Red is CPU consuming, Orange is waiting.
+Red is CPU consuming, orange is waiting.
 
+// Github cannot render it
 [graphviz, "utilization.png"]
 -----
 digraph Q {
   rankdir=LR
+  ranksep=0
+  nodesep=0
   bgcolor="transparent";
-  node [shape=record style="setlinewidth(0)"];
+  node [shape=plaintext style="setlinewidth(0)" margin=0];
   sequencial [label = <
             <table border="0" cellspacing="0">
             <tr><td bgcolor="red" height="25%">Send request 1</td></tr>
@@ -130,18 +133,18 @@ Average Response Time may not be good enough, but CPU load will be more stable.
 We have 3 limits: memory, CPU and IO sockets.
 Threads will be usually limited by CPU and memory.
 Asyn approach can overcame this limitation easily, so only number of available sockets is a real limit.
-Each sockei is a file for OS, so we are limited by number of file handlers.
+Each socket is a file for OS, so we are limited by number of file handlers.
 For the desktop Windows this is about 8192 handlers, for Linux more than 300 000.
 
 == Types of the asynchronicity
 
-* **Callback**
+* **Callback:**
   You define what should be done and what should be done after first one is ready (callback).
-  You have no control when callback will be called. if you need to build a chain of events,
+  You have no control when callback will be called. If you need to build a chain of events,
   you need to add it as callback of callback. This approach usually referenced as **Callback hell** or **Pyramid of the doom**.
 
-* **Promises (Futures)**
-  When you start async task you get an object that know about your task. You can ask it if you task is ready.
+* **Promises (Futures):**
+  When you start async task you get an object that knows about your task. You can ask it if your task is ready.
   Waiting the task finish is your responsibility. This approach is more complex and flexible.
 
 == Event loop
@@ -151,13 +154,14 @@ It helps to overlap waiting time. You have control over overlapping. That is all
 Event loops come in different shapes and forms. It can be run in a single thread or use all available processors.
 
 It does not require any support from the compiler or special syntax from the language.
-you can write onw implementation on pure Python.
+You can write own implementation on pure Python.
 
-It is a single point of failure. If you loop is dead, all coroutines are dead.
+It is a single point of failure. If your loop is dead, all coroutines are dead.
 
 
 == Dummy event loop
-[source,python, source-highlighter=highlightjs]
+// Render file from disc
+[source,python]
 .loop.py
 ----
 include::loop.py[tags=run_event_loop]
@@ -182,18 +186,18 @@ Implemented event loop on generators. (First release is in 2010)
 [source,python]
 .tornado.py
 ----
-response = yeild do_request()
+response = yield do_request()
 ----
 
 You write a generator and tornado will send it to the event loop.
 Event loop will start it and pass control to your code.
-Each time you call `yield` program control returned to the loop, and your task added to queue.
+Each time you call `yield` program control will be returned to the loop, and your task will be added to queue.
 When task is ready loop will call `send` method and control will be back to code again.
 
 == Internal implementation before Python 3.5: asyncio
-This library used `yield from` introduced in python 3.3,
-It was so popular, that became part of python standard library in python 3.4.
-In python 3.5 async/await expression added to the language core.
+This library used `yield from` introduced in Python 3.3.
+It was so popular, that became part of Python standard library in Python 3.4.
+In Python 3.5 async/await expression added to the language core.
 
 == Internal implementation after Python 3.5
 Idea of async/await syntax was introduced in other languages.
@@ -239,7 +243,7 @@ There are three main types of awaitable objects: coroutines, Tasks, and Futures.
 
 == Coroutines
 
-Python coroutines are awaitables and therefore can be awaited from other coroutines
+Python coroutines are awaitables and therefore can be awaited from other coroutines.
 [source,python]
 .coroutines.py
 ----
@@ -265,10 +269,10 @@ asyncio.run(main())
 |===
 | asyncio.run( | event loop started
 | asyncio.run(main()) | coroutine added to event loop queue,
-control returned to event loop, event loop starts the coroutine (main))
+control returned to event loop, event loop starts the coroutine (main)
 |print(f"started at {time.strftime('%X')}")| prints text in the main function
 |say_after(1, 'hello')| coroutine added to event loop queue,
-control passed to event loop, event loop starts the coroutine (say_after(1, 'hello')))
+control passed to event loop, event loop starts the coroutine (say_after(1, 'hello'))
 |asyncio.sleep(delay)| coroutine added to event loop queue,
 control returned to event loop, event loop is looping
 |await asyncio.sleep(delay)| event loop wait until coroutine finished and control passed to function
@@ -339,24 +343,24 @@ If you are using some popular DB it is not a trouble to find corresponding tools
 
 
 == Async server
-If you wan a server that can hold millions of the simple requests, async server is your choice.
-Speed come in a price: you will need to have all tech to be async. So you will be limited.
+If you want a server that can hold millions of the simple requests, async server is your choice.
+Speed comes in a price: you will need to have all tech to be async. So you will be limited.
 Forget about `requests` you will need server compatible async client to make calls from server side. Usually it comes together with server.
-Not all databases has async client that is supported by SQLAlchemy. Async code is also harder to write and maintain.
+Not all databases have async client that is supported by SQLAlchemy. Async code is also harder to write and maintain.
 
-There is a lot of them. I would say that the list of features they provide looks more like a Flask than a Django.
+There are a lot of them. I would say that the list of features they provide looks more like a Flask than a Django.
 Most of them have integration with SQL Alchemy.
 
 
 === https://www.tornadoweb.org/en/stable/[Tornado] it is a server and a client.
 It was designed more than 10 years ago, before async/await pop up.
-Almost the same idea, but generators instead of `def async` and `yeild` instead od `await`.
+Almost the same idea, but generators instead of `def async` and `yield` instead of `await`.
 Thy created own async web client to work with that event loop.
 Now Tornado supports async/await and generator workflow deprecated.
 
 
 === https://github.com/tiangolo/fastapi[FastAPI]
-Another example is is FastAPI, known as fastest framewrok alive (by FastAPI)
+Another example is FastAPI, known as fastest framework alive (by FastAPI).
 
 You can write sync and async request handlers at the same time.
 
@@ -374,7 +378,7 @@ async def read_results():
 ----
 
 If you are using a third party library that communicates with something
-(a database, an API, the file system, etc) and doesn't have support for using await,
+(a database, an API, a file system, etc) and doesn't have support for using await,
 (this is currently the case for most database libraries),
 then declare your path operation functions as normally, with just def, like:
 
@@ -394,16 +398,16 @@ If you just don't know, use normal def.
 
 
 == Async client
-You can wrap you `requests` call to async function, but it would be a blocking call.
+You can wrap your `requests` call to async function, but it would be a blocking call.
 Better than sequential, but not as good as pure asynchronous.
-Probably you will not any difference, since there are some optimizations when `urllib3` works with sockets.
+Probably you will not see any difference, since there are some optimizations when `urllib3` works with sockets.
 To make pure async calls you will need event loop embedded into the client.
 
 == aiohttp client
 *aiohttp* client written together with the server, but it can be used separately
-since it is based on python event loop implementation. So you can use it in any place.
+since it is based on Python event loop implementation. So you can use it in any place.
 
-[source,python]
+[source ,python]
 .a_io_http.py
 ----
 import aiohttp
@@ -425,11 +429,12 @@ if __name__ == '__main__':
 
 == DB clients
 Not all db supported, but it is matter of time.
+
 - PostgreSQL: https://github.com/MagicStack/asyncpg[asyncpg], compatible with SQL Alchemy
 - MySQL: https://github.com/aio-libs/aiomysql[aiomysql], compatible with SQL Alchemy
 
 == Async ORM
-https://github.com/python-gino/gino[gino], GINO Is Not ORM - is a lightweight asynchronous ORM built on top of SQLAlchemy core for Python asyncio.
+https://github.com/python-gino/gino[GINO] Is Not ORM - is a lightweight asynchronous ORM built on top of SQLAlchemy core for Python asyncio.
 Now (early 2020) GINO supports only one dialect asyncpg.
 
 == Django and async
@@ -450,7 +455,3 @@ Not all Django code can be run in that way.
 - async code is harder to write and support, much harder to debug
 - not all IO libraries have async analogues, using both async and sync code together may degrade system performance to sync level.
 - you can use async model outside of your application by using external tools like celery
-
-
-Async in js  https://eloquentjavascript.net/11_async.html
-https://realpython.com/python-concurrency/
