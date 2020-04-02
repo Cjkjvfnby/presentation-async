@@ -1,4 +1,4 @@
 Presentation for EPAM System students.
 
-I was inspired by article https://habr.com/ru/post/456032/[Презентация как код, или Почему я больше не пользуюсь Powerpoint-ом]
-Article author's https://github.com/inponomarev/csa-hb/[repository] was used as template. 
+I was inspired by article [Презентация как код, или Почему я больше не пользуюсь Powerpoint-ом](https://habr.com/ru/post/456032/)
+Article author's [repository](https://github.com/inponomarev/csa-hb/) was used as template. 
