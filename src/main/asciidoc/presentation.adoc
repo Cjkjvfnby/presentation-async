@@ -1,6 +1,7 @@
 = Async
 Andrey Solomatin, EPAM Systems
 // Themes : default, beige, moon, blood, night, serif, simple, sky, solarized
+:customcss: my.css
 :revealjs_theme: blood
 :backend: revealjs
 :revealjs_slideNumber: true
@@ -10,41 +11,41 @@ Andrey Solomatin, EPAM Systems
 :encoding: UTF-8
 :lang: en
 include::_doc_general_attributes.adoc[]
+:source-highlighter: highlightjs
 :doctype: article
 :toclevels: 1
 :imagesdir: images
-:source-highlighter: highlightjs
-:highlightjsdir: highlight
 :icons: font
 :iconfont-remote!:
 :revealjs_mouseWheel: true
 :revealjs_center: false
-:revealjs_transition: slide
+:revealjs_transition: zoom
 :revealjs_width: 1600
 :revealjs_height: 900
-
+:sectnums:
+:sectnumlevels: 0
 :!figure-caption:
 
 Cjvfkjnby@gmail.com
 
-
+[.text-left]
 == Concurrent computing
-image::threads.jpg[Photo by Wendy van Zyl, role="right"]
+image::threads.jpg[Photo by Wendy van Zyl, 500, role="right"]
 
 Concurrent computing is a form of computing in which several computations executed concurrently
 during overlapping time periods instead of sequentially, with one completing before the next starts.
 
 All this thing is about a concurrency:
 
-** process
-** thread
-** coroutine/fiber
-** green thread
+* process
+* thread
+* coroutine/fiber
+* green thread
 
 In high level they are the same, but on low level they are different.
 
 == Asynchronous in real life
-image::toaster.jpg[Photo by Claudio Schwarz, role="right"]
+image::toaster.jpg[Photo by Claudio Schwarz, 500,  role="right"]
 If you load the toaster and go to fridge to get some jam, this is asynchronous operations.
 If you load the toaster, wait until it is finished and go to the fridge, it is synchronous.
 
@@ -52,7 +53,7 @@ It is applicable in case on IO bound tasks (wait until bread roasted),
 but not applicable for IO bound tasks like reading a book.
 
 == Preemptive multitasking
-image::bsod.jpg[BSOD, float="right"]
+image::bsod.jpg[BSOD, 500, float="right"]
 Preemptive multitasking is when Operation system decide when it wants to switch between concurrent tasks.
 
 == Cooperative multitasking
@@ -67,7 +68,7 @@ Left is sequential approach and right is asynchronous approach.
 Red is CPU consuming, orange is waiting.
 
 // Github cannot render it
-[graphviz, "utilization.png"]
+[graphviz]
 -----
 digraph Q {
   rankdir=LR
@@ -116,20 +117,27 @@ digraph Q {
 
 == Async vs threads: Memory
 Each thread require memory for the stack, number of threads physically limited by machine memory.
-Systems like Django and Flask create a thread for each client.
+
+Frameworks like Django and Flask create a thread for each client.
+
 Async approach works in the different way, it adds each request to the queue.
 And can handle them in a single thread one by one. So it is much more scalable.
 
 
 == Async vs threads: CPU
-You can create a lot of threads, but only limited number of them will work in the same time. Limit is the number of CPU.
+You can create a lot of threads, but only limited number of them will work in the same time.
+Limit is the number of CPU.
+
 With each thread exceeding processors limit switching overhead will grow.
+
 Async approach does not care about processors, it just gets new item from the queue.
 Average Response Time may not be good enough, but CPU load will be more stable.
 
 == Async vs threads: IO bound
 We have 3 limits: memory, CPU and IO sockets.
+
 Threads will be usually limited by CPU and memory.
+
 Asyn approach can overcame this limitation easily, so only number of available sockets is a real limit.
 Each socket is a file for OS, so we are limited by number of file handlers.
 For the desktop Windows this is about 8192 handlers, for Linux more than 300 000.
@@ -159,11 +167,11 @@ It is a single point of failure. If your loop is dead, all coroutines are dead.
 
 == Dummy event loop
 // Render file from disc
-[source,python]
-.loop.py
+[source, python]
 ----
 include::loop.py[tags=run_event_loop]
 ----
+[.small-font]
 See full example in the repository.
 
 == Event loop in Python
@@ -181,8 +189,7 @@ image::tornado.png[]
 Implemented event loop on generators. (First release is in 2010)
 
 
-[source,python]
-.tornado.py
+[source, python]
 ----
 response = yield do_request()
 ----
@@ -201,8 +208,7 @@ In Python 3.5 async/await expression added to the language core.
 Idea of async/await syntax was introduced in other languages.
 It was so great, that Python community adapted it.
 
-[source,python]
-.async_world.py
+[source, python]
 ----
 import asyncio
 
@@ -219,8 +225,7 @@ asyncio.run(main())
 Your event loop can be run on the other server.
 For example http://docs.celeryproject.org/en/latest/index.html[celery].
 
-[source,python]
-.celery_connector.py
+[source, python]
 ----
 from celery import Celery
 
@@ -242,43 +247,42 @@ There are three main types of awaitable objects: coroutines, Tasks, and Futures.
 == Coroutines
 
 Python coroutines are awaitables and therefore can be awaited from other coroutines.
-[source,python]
-.coroutines.py
+
+[.columns]
+== Coroutines example
+[.column]
+[source, python]
 ----
 import asyncio
-import time
 
 async def say_after(delay, what):
-    await asyncio.sleep(delay)
-    print(what)
+    await asyncio.sleep(delay)  # <4> <5>
+    print(what) <6>
 
 async def main():
-    print(f"started at {time.strftime('%X')}")
+    print("Started")  # <2>
 
-    await say_after(1, 'hello')
-    await say_after(2, 'world')
+    await say_after(1, 'hello')  # <3> <7>
+    await say_after(2, 'world') <8>
+    print("Finished") <9>
 
-    print(f"finished at {time.strftime('%X')}")
-
-asyncio.run(main())
+asyncio.run(main()) # <1> <10>
 ----
-
-|===
-| asyncio.run(main()) | coroutine created and event loop stared with that coroutine in the queue,
+[.small-font]
+[.column]
+<1> coroutine created and event loop stared with that coroutine in the queue,
 control returned to event loop, event loop starts the coroutine (main)
-|print(f"started at {time.strftime('%X')}")| prints text in the main function
-|say_after(1, 'hello')| coroutine added to event loop queue,
+<2> prints text in the main function
+<3> coroutine added to event loop queue,
 control passed to event loop, event loop starts the coroutine (say_after(1, 'hello'))
-|asyncio.sleep(delay)| coroutine added to event loop queue,
+<4> coroutine added to event loop queue,
 control returned to event loop, event loop is looping
-|await asyncio.sleep(delay)| event loop wait until coroutine finished and control passed to function
-|print(what)| do some stuff with IO and exit function, It is await function and control passed to event loop after it finished.
-| await say_after(1, 'hello') | loop see that it can return control to main function
-| await say_after(2, 'world') | once more schedule, wait until finished.
-| print(f"finished at {time.strftime('%X')}") | print to IO and finish. Event loop closed.
-|===
-
-Do you notice that if we remove asyn/await nothing will be changed? Program will still do the same in the same amount of time?
+<5> event loop wait until the coroutine finished and control passed to function
+<6> do some stuff with IO and exit function, It is await function and control passed to event loop after it finished.
+<7> loop see that it can return control to main function
+<8> once more schedule, wait until finished.
+<9> print to IO and finish. Event loop closed.
+<10> event loop shut down
 
 
 == Tasks
@@ -286,76 +290,73 @@ Tasks are used to schedule coroutines concurrently.
 When a coroutine is wrapped into a Task with functions like asyncio.create_task()
 the coroutine is automatically scheduled and will run as soon as control passed to event loop.
 
-[source,python]
-.async-async.py
+== Tasks example
+[source, python]
 ----
 async def main():
     task1 = asyncio.create_task(
         say_after(1, 'hello'))
-
     task2 = asyncio.create_task(
         say_after(2, 'world'))
 
-    print(f"started at {time.strftime('%X')}")
-
-    # Wait until both tasks are completed (should take
-    # around 2 seconds.)
-    await task1
+    print("Started")
+    # Wait until both tasks are completed
+    # (should take around 2 seconds.)
+    await task1  # <1>
     await task2
-
-    print(f"finished at {time.strftime('%X')}")
+    print("Finished")
 ----
-
-This code do a magic trick, all tasks in the queue started when first await is called.
-
-`await task1` will start both task1 and task2. `await say_after(1, 'oops')` is not a task,
-so this will not trigger any task start.
+<1> This code do a magic trick, all tasks in the queue started when first await is called.
+`await task1` will start both `task1` and `task2`.
+Keep in mind, if you await a coroutine (`await say_after(1, 'oops')`, it will not trigger any task start.
 
 == Futures
-
 A Future is a special low-level awaitable object that represents an eventual result of an asynchronous operation.
 Normally there is no need to create Future objects at the application level code.
 Future objects, sometimes exposed by libraries and some asyncio APIs, can be awaited
 
-[source,python]
-.gather.py
+[source, python]
 ----
 async def main():
     task1 = asyncio.create_task(
         say_after(1, 'hello'))
-
     task2 = asyncio.create_task(
         say_after(2, 'world'))
     await asyncio.gather(task1, task2)
     # low level version
-    #  await asyncio.wait([task1, task2], return_when=asyncio.ALL_COMPLETED)
+    # await asyncio.wait([task1, task2], return_when=asyncio.ALL_COMPLETED)
 ----
-
 
 == Async stack
 To get full power of the async programming, every IO library in your code should be async.
+
 Web server, database connector, server side web client, etc.
+
 If you are using some popular DB it is not a trouble to find corresponding tools.
 
 
 == Async server
 If you want a server that can hold millions of the simple requests, async server is your choice.
+
 Speed comes in a price: you will need to have all tech to be async. So you will be limited.
+
 Forget about `requests` you will need server compatible async client to make calls from server side. Usually it comes together with server.
 Not all databases have async client that is supported by SQLAlchemy. Async code is also harder to write and maintain.
 
 There are a lot of them. I would say that the list of features they provide looks similar to Flask.
 Most of them have integration with SQL Alchemy.
 
-
-=== https://www.tornadoweb.org/en/stable/[Tornado] is a server and a client.
+== https://www.tornadoweb.org/en/stable/[Tornado] is a server and a client.
 It was designed more than 10 years ago, before async/await pop up.
+
 Almost the same idea, but generators instead of `def async` and `yield` instead of `await`.
+
 They created own async web client to work with that event loop.
+
 Now Tornado supports async/await and generator workflow deprecated.
 
 
-=== https://github.com/tiangolo/fastapi[FastAPI]
+== https://github.com/tiangolo/fastapi[FastAPI] async
 Another example is FastAPI, known as fastest framework alive (by FastAPI).
 
 You can write sync and async request handlers at the same time.
@@ -364,8 +365,8 @@ Here is what documentation say:
 
 If you are using third party libraries that tell you to call them with await, like: `results = await some_library()`
 Then, declare your path operation functions with async def like:
-[source,python]
-.fast_api_async.py
+
+[source, python]
 ----
 @app.get('/')
 async def read_results():
@@ -373,13 +374,18 @@ async def read_results():
   return results
 ----
 
+If your application (somehow) doesn't have to communicate with anything else and wait for it to respond,
+`use async def`.
+
+
+== https://github.com/tiangolo/fastapi[FastAPI] sync
+
 If you are using a third party library that communicates with something
 (a database, an API, a file system, etc) and doesn't have support for using await,
 (this is currently the case for most database libraries),
-then declare your path operation functions as normally, with just def, like:
+then declare your path operation functions as normally, with just `def`, like:
 
-[source,pyton]
-.fast_api_sync.py
+[source, pyton]
 ----
 @app.get('/')
 def results():
@@ -387,24 +393,23 @@ def results():
   return results
 ----
 
-If your application (somehow) doesn't have to communicate with anything else and wait for it to respond,
-`use async def`.
-
-If you just don't know, use normal def.
+If you just don't know, use normal `def`.
 
 
 == Async client
 You can wrap your `requests` call to async function, but it would be a blocking call.
+
 Better than sequential, but not as good as pure asynchronous.
+
 Probably you will not see any difference, since there are some optimizations when `urllib3` works with sockets.
+
 To make pure async calls you will need event loop embedded into the client.
 
 == aiohttp client
 *aiohttp* client written together with the server, but it can be used separately
 since it is based on Python event loop implementation. So you can use it in any place.
 
-[source ,python]
-.a_io_http.py
+[source, python]
 ----
 import aiohttp
 import asyncio
@@ -416,7 +421,6 @@ async def fetch(session, url):
 async def main():
     async with aiohttp.ClientSession() as session:
         html = await fetch(session, 'http://python.org')
-        print(html)
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
@@ -426,8 +430,8 @@ if __name__ == '__main__':
 == DB clients
 Not all db supported, but it is matter of time.
 
-- PostgreSQL: https://github.com/MagicStack/asyncpg[asyncpg], compatible with SQL Alchemy
-- MySQL: https://github.com/aio-libs/aiomysql[aiomysql], compatible with SQL Alchemy
+* PostgreSQL: https://github.com/MagicStack/asyncpg[asyncpg], compatible with SQL Alchemy
+* MySQL: https://github.com/aio-libs/aiomysql[aiomysql], compatible with SQL Alchemy
 
 == Async ORM
 https://github.com/python-gino/gino[GINO] Is Not ORM - is a lightweight asynchronous ORM built on top of SQLAlchemy core for Python asyncio.
@@ -446,8 +450,8 @@ Not all Django code can be run in that way.
 
 == Conclusion
 
-- async approach allows developers to control waiting overlaps
-- async approach effectively utilizes resources when task is IO bound, it will work more effective under heavy load.
-- async code is harder to write and support, much harder to debug
-- not all IO libraries have async analogues, using both async and sync code together may degrade system performance to sync level.
-- you can use async model outside of your application by using external tools like celery
+* async approach allows developers to control waiting overlaps
+* async approach effectively utilizes resources when task is IO bound, it will work more effective under heavy load.
+* async code is harder to write and support, much harder to debug
+* not all IO libraries have async analogues, using both async and sync code together may degrade system performance to sync level.
+* you can use async model outside of your application by using external tools like celery
