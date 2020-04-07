@@ -1,5 +1,7 @@
 = Async
+
 Andrey Solomatin, EPAM Systems
+
 // Themes : default, beige, moon, blood, night, serif, simple, sky, solarized
 :customcss: my.css
 :revealjs_theme: blood
@@ -26,8 +28,6 @@ include::_doc_general_attributes.adoc[]
 :sectnumlevels: 0
 :!figure-caption:
 
-Cjvfkjnby@gmail.com
-
 [.text-left]
 == Concurrent computing
 image::threads.jpg[Photo by Wendy van Zyl, 500, role="right"]
@@ -46,7 +46,7 @@ In high level they are the same, but on low level they are different.
 
 == Asynchronous in real life
 image::toaster.jpg[Photo by Claudio Schwarz, 500,  role="right"]
-If you load the toaster and go to fridge to get some jam, this is asynchronous operations.
+If you load the toaster and go to the fridge to get some jam, this is asynchronous operations.
 If you load the toaster, wait until it is finished and go to the fridge, it is synchronous.
 
 It is applicable in case on IO bound tasks (wait until bread roasted),
@@ -110,21 +110,21 @@ digraph Q {
 == When should we use it
 
 |===
-||Sequential|Asynchronous
+| |Sequential|Asynchronous
 | IO bound program | waste time for waiting | can utilize 100% of CPU
 | CPU bound program | can utilize 100% of CPU | can utilize 100% of CPU
 |===
 
-== Async vs threads: Memory
-Each thread require memory for the stack, number of threads physically limited by machine memory.
+== Async vs threads/process: Memory
+Each thread requires memory for the stack, number of threads physically limited by machine memory.
 
-Frameworks like Django and Flask create a thread for each client.
+Frameworks like Django and Flask create a process for each client.
 
 Async approach works in the different way, it adds each request to the queue.
 And can handle them in a single thread one by one. So it is much more scalable.
 
 
-== Async vs threads: CPU
+== Async vs threads/process: CPU
 You can create a lot of threads, but only limited number of them will work in the same time.
 Limit is the number of CPU.
 
@@ -133,12 +133,12 @@ With each thread exceeding processors limit switching overhead will grow.
 Async approach does not care about processors, it just gets new item from the queue.
 Average Response Time may not be good enough, but CPU load will be more stable.
 
-== Async vs threads: IO bound
+== Async vs threads/process: IO bound
 We have 3 limits: memory, CPU and IO sockets.
 
 Threads will be usually limited by CPU and memory.
 
-Asyn approach can overcame this limitation easily, so only number of available sockets is a real limit.
+Async approach can overcome this limitation easily, so only number of available sockets is a real limit.
 Each socket is a file for OS, so we are limited by number of file handlers.
 For the desktop Windows this is about 8192 handlers, for Linux more than 300 000.
 
@@ -153,7 +153,10 @@ For the desktop Windows this is about 8192 handlers, for Linux more than 300 000
   When you start async task you get an object that knows about your task. You can ask it if your task is ready.
   Waiting the task finish is your responsibility. This approach is more complex and flexible.
 
+
 == Event loop
+image::eloop.png[float="right"]
+
 Does not matter which approach you use, event loop will be under it.
 It helps to overlap waiting time. You have control over overlapping. That is all about.
 
@@ -164,8 +167,9 @@ You can write own implementation on pure Python.
 
 It is a single point of failure. If your loop is dead, all coroutines are dead.
 
-
 == Dummy event loop
+
+It just a queue and a loop. Nothing more.
 // Render file from disc
 [source, python]
 ----
@@ -186,12 +190,17 @@ See full example in the repository.
 == Internal implementation before Python 3.5: Tornado
 
 image::tornado.png[]
-Implemented event loop on generators. (First release is in 2010)
-
+Implemented event loop on generators (first release in 2010).
 
 [source, python]
 ----
-response = yield do_request()
+class GenAsyncHandler(RequestHandler):
+    @gen.coroutine
+    def get(self):
+        http_client = AsyncHTTPClient()
+        response = yield http_client.fetch("http://example.com")
+        do_something_with_response(response)
+        self.render("template.html")
 ----
 
 You write a generator and tornado will send it to the event loop.
@@ -235,7 +244,8 @@ app = Celery('tasks', broker='pyamqp://guest@localhost//')
 def add(x, y):
 return x + y
 
-result = add.delay(4, 4)
+task_handler = add.delay(4, 4)
+task_handler.get()  # wait until task finished and return
 ----
 
 
@@ -282,12 +292,12 @@ control returned to event loop, event loop is looping
 <7> loop see that it can return control to main function
 <8> once more schedule, wait until finished.
 <9> print to IO and finish. Event loop closed.
-<10> event loop shut down
+<10> event loop shuts down
 
 
 == Tasks
 Tasks are used to schedule coroutines concurrently.
-When a coroutine is wrapped into a Task with functions like asyncio.create_task()
+When a coroutine is wrapped into a Task with functions like `asyncio.create_task()`
 the coroutine is automatically scheduled and will run as soon as control passed to event loop.
 
 == Tasks example
@@ -336,7 +346,7 @@ If you are using some popular DB it is not a trouble to find corresponding tools
 
 
 == Async server
-If you want a server that can hold millions of the simple requests, async server is your choice.
+If you want a server that can hold millions of simple requests, async server is your choice.
 
 Speed comes in a price: you will need to have all tech to be async. So you will be limited.
 
@@ -437,9 +447,27 @@ Not all db supported, but it is matter of time.
 https://github.com/python-gino/gino[GINO] Is Not ORM - is a lightweight asynchronous ORM built on top of SQLAlchemy core for Python asyncio.
 Now (early 2020) GINO supports only one dialect asyncpg.
 
+[source, python]
+----
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer(), primary_key=True)
+    nickname = db.Column(db.Unicode(), default='noname')
+
+async def main():
+    await db.set_bind('postgresql://localhost/gino')
+    await db.gino.create_all() # Create tables
+    # Create object, `id` is assigned by database
+    u1 = await User.create(nickname='fantix')
+    print(u1.id, u1.nickname)  # 1 fantix
+    # Returns all user objects with "d" in their nicknames
+    users = await User.query.where(User.nickname.contains('d')).gino.all()
+    print(users)  # [<User object>, <User object>]
+----
+
 == Django and async
 Django is sync web framework. It is not easy to make it async.
-But in version 3.0 support for running async code added.
+In version 3.0 support for running async code added.
 
 You can run async function as a sync function with https://docs.djangoproject.com/en/3.0/topics/async/#async-to-sync[async-to-sync] wrapper.
 Django will create event loop for you, no need manually call `asyncio.run`

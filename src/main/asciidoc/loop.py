@@ -1,7 +1,7 @@
 from random import random
 from threading import Thread
 from time import sleep
-from typing import Union
+from typing import Optional
 
 STEP_IN_SECONDS = 0.1
 
@@ -26,7 +26,7 @@ class EventQueue:
     def is_empty(self):
         return not bool(self.queue)
 
-    def pop(self) -> Union[Task, None]:
+    def pop(self) -> Optional[Task]:
         done = []
         for task in self.queue:
             if task.is_ready():
