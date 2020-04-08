@@ -1,13 +1,9 @@
 = Async
-
 Andrey Solomatin, EPAM Systems
-
-// Themes : default, beige, moon, blood, night, serif, simple, sky, solarized
-:customcss: my.css
 :revealjs_theme: blood
+:customcss: my.css
 :backend: revealjs
 :revealjs_slideNumber: true
-:revealjs_history:
 :revealjs_progress: true
 :revealjs_hash: true
 :encoding: UTF-8
